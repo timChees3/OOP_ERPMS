@@ -11,11 +11,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     List<Doctor> findBySpecialization(String specialization);
 
-    List<Doctor> findByActiveTrue();
-
     List<Doctor> findByAvailableForEmergencyTrue();
 
     Optional<Doctor> findByLicenseNumber(String licenseNumber);
 
-    List<Doctor> findByFirstNameContainingOrLastNameContaining(String firstName, String lastName);
+    List<Doctor> findByFNameContainingOrLNameContaining(String firstName, String lastName);
 }

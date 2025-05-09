@@ -27,10 +27,35 @@ public class Admin extends User
     @Column(name = "employee_id", unique = true)
     private String employeeId;
 
-    @PrePersist
-    @Override
-    protected void onCreate() {
-        super.onCreate();
-        getRoles().add("ROLE_ADMIN");
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public Integer getAdminLevel() {
+        return adminLevel;
+    }
+
+    public void setAdminLevel(Integer adminLevel) {
+        this.adminLevel = adminLevel;
+    }
+
+    public String getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
     }
 }

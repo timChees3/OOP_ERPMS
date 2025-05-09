@@ -18,10 +18,7 @@ public interface MedicationRepository extends JpaRepository<Medication, Long> {
 
     List<Medication> findByAppointment(Appointment appointment);
 
-    List<Medication> findByPatientAndActiveTrue(Patient patient);
+    List<Medication> findByEndDateAfter(LocalDate date);
 
-    List<Medication> findByPatientAndStartDateBeforeAndEndDateAfter(
-            Patient patient, LocalDate currentDate, LocalDate currentDate2);
-
-    List<Medication> findByPatientOrderByPrescribedAtDesc(Patient patient);
+    List<Medication> findByAppointmentPatientAndEndDateAfter(Patient patient, LocalDate currentDate);
 }

@@ -21,4 +21,8 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByPatientOrderByCreatedAtDesc(Patient patient);
 
     List<Feedback> findByDoctorOrderByCreatedAtDesc(Doctor doctor);
+
+    boolean existsByAppointment(Appointment appointment);
+
+    List<Appointment> findAppointmentsWithoutFeedbackByDoctor(Doctor doctor);
 }

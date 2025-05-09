@@ -1,97 +1,167 @@
 package com.toinfinityandbeyond.RPMS.service;
 
-import com.toinfinityandbeyond.RPMS.model.Doctor;
+import com.toinfinityandbeyond.RPMS.model.Appointment;
+import com.toinfinityandbeyond.RPMS.model.Medication;
 import com.toinfinityandbeyond.RPMS.model.Patient;
 import com.toinfinityandbeyond.RPMS.model.Vitals;
-import com.toinfinityandbeyond.RPMS.repository.DoctorRepository;
-import lombok.RequiredArgsConstructor;
+import com.toinfinityandbeyond.RPMS.repository.AppointmentRepository;
+import com.toinfinityandbeyond.RPMS.repository.MedicationRepository;
+import com.toinfinityandbeyond.RPMS.repository.VitalsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class AlertService {
+public class AlertService
+{
+    @Autowired
+    private VitalsRepository vitalsRepository;
 
     @Autowired
-    private  EmailService emailService;
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private  DoctorRepository doctorRepository;
+    private JavaMailSender mailSender;
 
-    @Async
-    public void sendVitalsAlert(Vitals vitals) {
-        if (!vitals.isCritical()) {
-            return;
+    @Autowired
+    private MedicationRepository medicationRepository;
+
+    @Value("${spring.mail.from:no-reply@rpms.local}")
+    private String fromAddress;
+
+    public void sendAppointmentStatusUpdate(Appointment appt) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo(appt.getPatient().getEmail());
+        msg.setSubject("Your appointment on " + appt.getScheduledTime() + " is now " + appt.getStatus().name());
+        if (Appointment.Type.VIDEO_CONSULTATION.equals(appt.getType()))
+        {
+            msg.setText("Hello " + appt.getPatient().getfName() + ",\n\n"
+                    + "Your appointment scheduled for " + appt.getScheduledTime()
+                    + " has been marked as “" + appt.getStatus() + "”.\n"
+                    + "Meeting Link: https://meet.google.com/jrv-qroc-zkc" + "”.\n\n"
+                    + "Best,\nThe ERPMS Team");
+        }
+        else
+        {
+            msg.setText("Hello " + appt.getPatient().getfName() + ",\n\n"
+                    + "Your appointment scheduled for " + appt.getScheduledTime()
+                    + " has been marked as “" + appt.getStatus() + "”.\n\n"
+                    + "Best,\nThe ERPMS Team");
         }
 
-        Patient patient = vitals.getPatient();
+        mailSender.send(msg);
+    }
 
-        // Get all doctors who are available for emergency
-        List<Doctor> availableDoctors = doctorRepository.findByAvailableForEmergencyTrue();
+    @Transactional
+    public void sendCriticalVitalsAlerts(Vitals v)
+    {
+        Patient p = v.getPatient();
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo(p.getPrimaryDoctor().getEmail());
+        msg.setSubject("EMERGENCY: Critical vitals for " + p.getfName() + " " + p.getlName());
+        msg.setText("Doctor,\n\n"
+                + "Patient " + p.getfName() + " has got critical "
+                + v.getCriticalNotes()
+                + " at " + v.getRecordedAt() + ".\n\n"
+                + "Please attend immediately.\n\n"
+                + "– ERPMS Alert System");
+        mailSender.send(msg);
 
-        // Create alert message
-        String alertSubject = "EMERGENCY ALERT: Critical Vitals Detected for Patient " +
-                patient.getFirstName() + " " + patient.getLastName();
+        v.setAlertSent(true);
+        vitalsRepository.save(v);
+    }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String recordedTime = vitals.getRecordedAt().format(formatter);
 
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append("CRITICAL VITALS ALERT\n\n");
-        messageBuilder.append("Patient: ").append(patient.getFirstName()).append(" ").append(patient.getLastName()).append("\n");
-        messageBuilder.append("Patient ID: ").append(patient.getId()).append("\n");
-        messageBuilder.append("Recorded at: ").append(recordedTime).append("\n\n");
-        messageBuilder.append("CRITICAL VITALS:\n");
-        messageBuilder.append(vitals.getCriticalNotes()).append("\n\n");
+    public void panicButtonPressed(Patient patient)
+    {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        // assume Patient has a method getOnCallTeamEmails()
+        msg.setTo(patient.getPrimaryDoctor().getEmail());
+        msg.setSubject("PANIC BUTTON TRIGGERED for " +  patient.getfName() + " " + patient.getlName());
+        msg.setText("Team,\n\n"
+                + "The panic button was pressed by "
+                + patient.getfName() + " " + patient.getlName() + " (ID: " + patient.getId() + ").\n\n"
+                + "Please respond immediately.\n\n"
+                + "– ERPMS Alert System");
+        mailSender.send(msg);
+    }
 
-        // Add all vitals data
-        messageBuilder.append("Complete Vitals Information:\n");
-        if (vitals.getHeartRate() != null) {
-            messageBuilder.append("Heart Rate: ").append(vitals.getHeartRate()).append(" bpm\n");
-        }
-        if (vitals.getOxygenLevel() != null) {
-            messageBuilder.append("Oxygen Level: ").append(vitals.getOxygenLevel()).append("%\n");
-        }
-        if (vitals.getTemperature() != null) {
-            messageBuilder.append("Temperature: ").append(vitals.getTemperature()).append("°C\n");
-        }
-        if (vitals.getSystolicPressure() != null && vitals.getDiastolicPressure() != null) {
-            messageBuilder.append("Blood Pressure: ").append(vitals.getSystolicPressure())
-                    .append("/").append(vitals.getDiastolicPressure()).append(" mmHg\n");
-        }
-        if (vitals.getRespiratoryRate() != null) {
-            messageBuilder.append("Respiratory Rate: ").append(vitals.getRespiratoryRate()).append(" breaths/min\n");
-        }
-        if (vitals.getBloodSugar() != null) {
-            messageBuilder.append("Blood Sugar: ").append(vitals.getBloodSugar()).append(" mg/dL\n");
-        }
+    @Scheduled(cron = "0 0 8 * * *")
+    @Transactional
+    public void sendDailyMedicationReminders() {
+        LocalDate today = LocalDate.now();
+        List<Medication> meds = medicationRepository
+                .findByEndDateAfter(today);
 
-        messageBuilder.append("\nPlease take immediate action!\n");
-        messageBuilder.append("Open the Remote Patient Monitoring System to view detailed information.");
-
-        String alertMessage = messageBuilder.toString();
-
-        // Send alert to all available doctors
-        for (Doctor doctor : availableDoctors) {
-            emailService.sendEmail(doctor.getEmail(), alertSubject, alertMessage);
-        }
-
-        // Send alert to patient's emergency contact if available
-        if (patient.getEmergencyContact() != null && !patient.getEmergencyContact().isEmpty()) {
-            emailService.sendEmail(patient.getEmergencyContact(), alertSubject, alertMessage);
+        for (Medication med : meds) {
+            sendMedicationReminder(med);
         }
     }
 
-    @Async
-    public void sendAppointmentAlert(String to, String subject, String message) {
-        emailService.sendEmail(to, subject, message);
+    public void sendMedicationReminder(Medication med) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo(med.getPatient().getEmail());
+        msg.setSubject("Medication Reminder: “" + med.getName() + "”");
+        msg.setText(
+                "Hello " + med.getPatient().getfName() + ",\n\n" +
+                        "This is your reminder to take your medication:\n\n" +
+                        "• Name: " + med.getName() + "\n" +
+                        "• Dosage: " + med.getDosage() + "\n" +
+                        "• Instructions: " + med.getInstructions() + "\n\n" +
+                        "Please follow your prescribed schedule (" + med.getFrequency() + ").\n\n" +
+                        "If you have any questions, contact your doctor.\n\n" +
+                        "– The ERPMS Team"
+        );
+        mailSender.send(msg);
     }
 
-    @Async
-    public void sendMedicationReminderAlert(String to, String subject, String message) {
-        emailService.sendEmail(to, subject, message);
+    public void sendAppointmentRequestNotificationToDoctor(Appointment appt) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo(appt.getDoctor().getEmail());
+        msg.setSubject("New Appointment Request from " + appt.getPatient().getfName() + " " + appt.getPatient().getlName());
+        msg.setText(
+                "Hello Dr. " + appt.getDoctor().getlName() + ",\n\n" +
+                        appt.getPatient().getfName() + " " + appt.getPatient().getlName() +
+                        " has requested an appointment on " + appt.getScheduledTime() + ".\n" +
+                        "Please review and confirm or decline the request in the system.\n\n" +
+                        "– ERPMS Alert System"
+        );
+        mailSender.send(msg);
+    }
+
+    public void sendAppointmentRequestConfirmationToPatient(Appointment appt) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo(appt.getPatient().getEmail());
+        msg.setSubject("Appointment Request Received");
+        msg.setText(
+                "Hello " + appt.getPatient().getfName() + " " + appt.getPatient().getlName() + ",\n\n" +
+                        "We have received your appointment request for " + appt.getScheduledTime() + ".\n" +
+                        "The doctor will be notified and you will receive a confirmation email once the request is approved.\n\n" +
+                        "Thank you,\nThe ERPMS Team"
+        );
+        mailSender.send(msg);
+    }
+
+    public void sendEmail()
+    {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(fromAddress);
+        msg.setTo("amoiz25pk@gmail.com");
+        msg.setSubject("New Appointment Request");
+        msg.setText("Hello");
+        mailSender.send(msg);
     }
 }

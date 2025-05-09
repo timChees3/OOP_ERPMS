@@ -43,10 +43,75 @@ public class Doctor extends User {
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Medication> prescribedMedications = new ArrayList<>();
 
-    @PrePersist
-    @Override
-    protected void onCreate() {
-        super.onCreate();
-        getRoles().add("ROLE_DOCTOR");
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getQualification() {
+        return qualification;
+    }
+
+    public void setQualification(String qualification) {
+        this.qualification = qualification;
+    }
+
+    public Integer getExperienceYears() {
+        return experienceYears;
+    }
+
+    public void setExperienceYears(Integer experienceYears) {
+        this.experienceYears = experienceYears;
+    }
+
+    public Double getConsultationFee() {
+        return consultationFee;
+    }
+
+    public void setConsultationFee(Double consultationFee) {
+        this.consultationFee = consultationFee;
+    }
+
+    public boolean isAvailableForEmergency() {
+        return availableForEmergency;
+    }
+
+    public void setAvailableForEmergency(boolean availableForEmergency) {
+        this.availableForEmergency = availableForEmergency;
+    }
+
+    public List<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments) {
+        this.appointments = appointments;
+    }
+
+    public List<Feedback> getFeedbacks() {
+        return feedbacks;
+    }
+
+    public void setFeedbacks(List<Feedback> feedbacks) {
+        this.feedbacks = feedbacks;
+    }
+
+    public List<Medication> getPrescribedMedications() {
+        return prescribedMedications;
+    }
+
+    public void setPrescribedMedications(List<Medication> prescribedMedications) {
+        this.prescribedMedications = prescribedMedications;
     }
 }

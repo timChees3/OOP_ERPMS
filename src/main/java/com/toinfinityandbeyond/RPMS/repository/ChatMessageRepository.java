@@ -12,7 +12,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     List<ChatMessage> findBySenderIdAndRecipientId(Long senderId, Long recipientId);
 
-    List<ChatMessage> findByRecipientIdAndReadFalse(Long recipientId);
+    List<ChatMessage> findByRecipientIdAndIsReadFalse(Long recipientId);
 
     List<ChatMessage> findByConversationIdOrderByTimestampAsc(String conversationId);
+
+    List<ChatMessage> findByConversationIdAndRecipientIdAndIsReadFalse(String conversationId, Long recipientId);
 }

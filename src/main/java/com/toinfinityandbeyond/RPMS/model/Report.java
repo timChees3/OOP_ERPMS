@@ -39,13 +39,13 @@ public class Report {
     @Column(name = "report_type")
     private String reportType;
 
-    @ManyToMany
+    @OneToOne
     @JoinTable(
             name = "report_vitals",
             joinColumns = @JoinColumn(name = "report_id"),
             inverseJoinColumns = @JoinColumn(name = "vitals_id")
     )
-    private List<Vitals> vitalsList = new ArrayList<>();
+    private Vitals vitals;
 
     @ManyToMany
     @JoinTable(
@@ -55,35 +55,113 @@ public class Report {
     )
     private List<Medication> medications = new ArrayList<>();
 
-    @ManyToMany
+    @OneToOne
     @JoinTable(
             name = "report_feedbacks",
             joinColumns = @JoinColumn(name = "report_id"),
             inverseJoinColumns = @JoinColumn(name = "feedback_id")
     )
-    private List<Feedback> feedbacks = new ArrayList<>();
+    private Feedback feedback;
 
-    @ManyToMany
+    @OneToOne
     @JoinTable(
             name = "report_appointments",
             joinColumns = @JoinColumn(name = "report_id"),
             inverseJoinColumns = @JoinColumn(name = "appointment_id")
     )
-    private List<Appointment> appointments = new ArrayList<>();
+    private Appointment appointment;
 
-    @Column(name = "file_path")
-    private String filePath;
-
-    @Column(name = "time_period_start")
-    private LocalDateTime timePeriodStart;
-
-    @Column(name = "time_period_end")
-    private LocalDateTime timePeriodEnd;
 
     @PrePersist
     protected void onCreate() {
         this.generatedAt = LocalDateTime.now();
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public LocalDateTime getGeneratedAt() {
+        return generatedAt;
+    }
+
+    public void setGeneratedAt(LocalDateTime generatedAt) {
+        this.generatedAt = generatedAt;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public Vitals getVitals() {
+        return vitals;
+    }
+
+    public void setVitals(Vitals vitals) {
+        this.vitals = vitals;
+    }
+
+    public List<Medication> getMedication() {
+        return medications;
+    }
+
+    public void setMedications(List<Medication> medications) {
+        this.medications = medications;
+    }
+
+    public Feedback getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(Feedback feedback) {
+        this.feedback = feedback;
+    }
+
+    public Appointment getAppointment() {
+        return appointment;
+    }
+
+    public void setAppointment(Appointment appointment) {
+        this.appointment = appointment;
+    }
 }
