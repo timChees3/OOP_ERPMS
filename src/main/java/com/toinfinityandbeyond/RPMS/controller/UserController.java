@@ -24,6 +24,15 @@ public class UserController
                 .body(created);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Long> logIn(
+            @RequestBody String username,
+            @RequestBody String password)
+    {
+        long userId = userService.login(username, password);
+        return ResponseEntity.ok(userId);
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,

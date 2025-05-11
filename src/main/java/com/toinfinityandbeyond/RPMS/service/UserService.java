@@ -1,5 +1,6 @@
 package com.toinfinityandbeyond.RPMS.service;
 
+import com.toinfinityandbeyond.RPMS.exception.BadRequestException;
 import com.toinfinityandbeyond.RPMS.exception.ResourceNotFoundException;
 import com.toinfinityandbeyond.RPMS.model.User;
 import com.toinfinityandbeyond.RPMS.repository.UserRepository;
@@ -21,6 +22,16 @@ public class UserService
     public User createUser(User user)
     {
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public long login(String username, String password)
+    {
+        User user = getUserByUsername(username);
+        if (user.getPassword().equals(password))
+            return user.getId();
+        else
+            throw new BadRequestException("Invalid username or password");
     }
 
     @Transactional
