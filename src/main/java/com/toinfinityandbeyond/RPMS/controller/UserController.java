@@ -1,5 +1,6 @@
 package com.toinfinityandbeyond.RPMS.controller;
 
+import com.toinfinityandbeyond.RPMS.dto.LoginRequest;
 import com.toinfinityandbeyond.RPMS.model.User;
 import com.toinfinityandbeyond.RPMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,8 @@ public class UserController
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Long> logIn(
-            @RequestBody String username,
-            @RequestBody String password)
-    {
-        long userId = userService.login(username, password);
+    public ResponseEntity<Long> logIn(@RequestBody LoginRequest loginRequest) {
+        long userId = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
         return ResponseEntity.ok(userId);
     }
 
