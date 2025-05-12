@@ -18,10 +18,6 @@ import java.util.List;
 @Entity
 @Table(name = "patients")
 public class Patient extends User {
-
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
-
     @Column(name = "blood_group")
     private String bloodGroup;
 
@@ -47,14 +43,6 @@ public class Patient extends User {
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> reports = new ArrayList<>();
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
 
     public String getBloodGroup() {
         return bloodGroup;

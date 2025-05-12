@@ -2,9 +2,13 @@ package com.toinfinityandbeyond.RPMS.service;
 
 import com.toinfinityandbeyond.RPMS.exception.BadRequestException;
 import com.toinfinityandbeyond.RPMS.exception.ResourceNotFoundException;
+import com.toinfinityandbeyond.RPMS.model.Admin;
+import com.toinfinityandbeyond.RPMS.model.Doctor;
+import com.toinfinityandbeyond.RPMS.model.Patient;
 import com.toinfinityandbeyond.RPMS.model.User;
 import com.toinfinityandbeyond.RPMS.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.*;
@@ -19,19 +23,55 @@ public class UserService
     private UserRepository userRepository;
 
     @Transactional
-    public User createUser(User user)
-    {
-        return userRepository.save(user);
+    public User signup(User user) {
+        // decide subclass by role
+        if (user.getRoles().contains("PATIENT")) {
+            Patient p = new Patient();
+            copyBase(user, p);
+            return userRepository.save(p);
+        }
+        else if (user.getRoles().contains("DOCTOR")) {
+            Doctor d = new Doctor();
+            copyBase(user, d);
+            return userRepository.save(d);
+        }
+        else if (user.getRoles().contains("ADMIN")) {
+            Admin a = new Admin();
+            copyBase(user, a);
+            return userRepository.save(a);
+        }
+        else
+        {
+            throw new BadRequestException("Invalid role");
+        }
     }
 
     @Transactional
-    public User login(String username, String password) {
-        User user = getUserByUsername(username);
-        if (user.getPassword().equals(password)) {
-            return user;  // Return the full user object
-        } else {
+    public Map<String,Object> login(String username, String password) {
+        User u = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadRequestException("Invalid username or password"));
+        if (!u.getPassword().equals(password)) {
             throw new BadRequestException("Invalid username or password");
         }
+        // return both id and roles
+        return Map.of(
+                "id", u.getId(),
+                "roles", u.getRoles()
+        );
+    }
+
+    private void copyBase(User src, User dest)
+    {
+        dest.setUsername(src.getUsername());
+        dest.setPassword(src.getPassword());
+        dest.setfName(src.getfName());
+        dest.setlName(src.getlName());
+        dest.setEmail(src.getEmail());
+        dest.setPhoneNumber(src.getPhoneNumber());
+        dest.setGender(src.getGender());
+        dest.setDob(src.getDob());
+        dest.setAddress(src.getAddress());
+        dest.setRoles(src.getRoles());
     }
 
     @Transactional

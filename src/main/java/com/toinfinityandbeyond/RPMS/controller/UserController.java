@@ -1,7 +1,5 @@
 package com.toinfinityandbeyond.RPMS.controller;
 
-import com.toinfinityandbeyond.RPMS.dto.LoginRequest;
-import com.toinfinityandbeyond.RPMS.dto.LoginResponse;
 import com.toinfinityandbeyond.RPMS.model.User;
 import com.toinfinityandbeyond.RPMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,18 +17,24 @@ public class UserController
     @Autowired
     private  UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user)
-    {
-        User created = userService.createUser(user);
-        return ResponseEntity.created(URI.create("/api/users/" + created.getId())) // 201
+    /** SIGN UP **/
+    @PostMapping("/signup")
+    public ResponseEntity<User> signup(@RequestBody User user) {
+        User created = userService.signup(user);
+        return ResponseEntity
+                .created(URI.create("/api/users/" + created.getId()))
                 .body(created);
     }
 
+    /** LOGIN **/
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> logIn(@RequestBody LoginRequest request) {
-        User user = userService.login(request.getUsername(), request.getPassword());
-        return ResponseEntity.ok(new LoginResponse(user.getId(), user.getRole()));
+    public ResponseEntity<Map<String,Object>> login(
+            @RequestBody Map<String,String> creds
+    ) {
+        String username = creds.get("username");
+        String password = creds.get("password");
+        Map<String,Object> result = userService.login(username, password);
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/update/{id}")
