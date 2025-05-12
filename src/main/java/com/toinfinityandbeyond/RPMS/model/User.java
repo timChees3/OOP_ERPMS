@@ -48,10 +48,8 @@ public class User
     @Column(nullable = false)
     private String address;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles = new HashSet<>();
+    @Column(nullable = false)
+    private String role;
 
     @Column(nullable = false)
     private LocalDateTime accountCreationDate;
@@ -143,12 +141,12 @@ public class User
         this.address = address;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public String getRole() {
+        return role;
     }
 
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public LocalDateTime getAccountCreationDate() {

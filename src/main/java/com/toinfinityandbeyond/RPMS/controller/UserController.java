@@ -29,10 +29,7 @@ public class UserController
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> logIn(@RequestBody LoginRequest request) {
         User user = userService.login(request.getUsername(), request.getPassword());
-        String primaryRole = user.getRoles().stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("User has no roles assigned"));
-        return ResponseEntity.ok(new LoginResponse(user.getId(), primaryRole));
+        return ResponseEntity.ok(new LoginResponse(user.getId(), user.getRole()));
     }
 
     @PutMapping("/update/{id}")
