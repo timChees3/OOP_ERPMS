@@ -25,13 +25,13 @@ public class UserService
     }
 
     @Transactional
-    public long login(String username, String password)
-    {
+    public User login(String username, String password) {
         User user = getUserByUsername(username);
-        if (user.getPassword().equals(password))
-            return user.getId();
-        else
+        if (user.getPassword().equals(password)) {
+            return user;  // Return the full user object
+        } else {
             throw new BadRequestException("Invalid username or password");
+        }
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.toinfinityandbeyond.RPMS.controller;
 
 import com.toinfinityandbeyond.RPMS.dto.LoginRequest;
+import com.toinfinityandbeyond.RPMS.dto.LoginResponse;
 import com.toinfinityandbeyond.RPMS.model.User;
 import com.toinfinityandbeyond.RPMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +27,12 @@ public class UserController
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Long> logIn(@RequestBody LoginRequest loginRequest) {
-        long userId = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
-        return ResponseEntity.ok(userId);
+    public ResponseEntity<LoginResponse> logIn(@RequestBody LoginRequest request) {
+        User user = userService.login(request.getUsername(), request.getPassword());
+        String primaryRole = user.getRoles().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("User has no roles assigned"));
+        return ResponseEntity.ok(new LoginResponse(user.getId(), primaryRole));
     }
 
     @PutMapping("/update/{id}")
