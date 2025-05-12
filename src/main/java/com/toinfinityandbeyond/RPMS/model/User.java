@@ -1,11 +1,12 @@
 package com.toinfinityandbeyond.RPMS.model;
 
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,34 +23,51 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(min = 3)
     @Column(nullable = false, unique = true)
     private String username;
 
+    @NotBlank
+    @Size(min = 8)
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true)
+    @NotBlank
+    @Column(nullable = false)
     private String fName;
 
-    @Column(nullable = true)
+    @NotBlank
+    @Column(nullable = false)
     private String lName;
 
+    @Email
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Pattern(regexp = "^(\\+92|92|0)3[0-9]{9}$")
     private String phoneNumber;
 
+    @NotBlank
+    @Pattern(regexp = "^(MALE|FEMALE|OTHER)$")
     @Column(nullable = false)
     private String gender;
 
-    @Column(nullable = true)
-    private String dob;
+    @NotNull
+    @Past
+    @Column(nullable = false)
+    private LocalDate dob;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
-    private String role;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles = new HashSet<>();
 
     @Column(nullable = false)
     private LocalDateTime accountCreationDate;
@@ -69,84 +87,84 @@ public class User
         this.id = id;
     }
 
-    public String getUsername() {
+    public @NotBlank @Size(min = 3) String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(@NotBlank @Size(min = 3) String username) {
         this.username = username;
     }
 
-    public String getPassword() {
+    public @NotBlank @Size(min = 8) String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(@NotBlank @Size(min = 8) String password) {
         this.password = password;
     }
 
-    public String getfName() {
+    public @NotBlank String getfName() {
         return fName;
     }
 
-    public void setfName(String fName) {
+    public void setfName(@NotBlank String fName) {
         this.fName = fName;
     }
 
-    public String getlName() {
+    public @NotBlank String getlName() {
         return lName;
     }
 
-    public void setlName(String lName) {
+    public void setlName(@NotBlank String lName) {
         this.lName = lName;
     }
 
-    public String getEmail() {
+    public @Email @NotBlank String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@Email @NotBlank String email) {
         this.email = email;
     }
 
-    public String getPhoneNumber() {
+    public @Pattern(regexp = "^(\\+92|92|0)3[0-9]{9}$") String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(@Pattern(regexp = "^(\\+92|92|0)3[0-9]{9}$") String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getGender() {
+    public @NotBlank @Pattern(regexp = "^(MALE|FEMALE|OTHER)$") String getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(@NotBlank @Pattern(regexp = "^(MALE|FEMALE|OTHER)$") String gender) {
         this.gender = gender;
     }
 
-    public String getDob() {
+    public @NotNull @Past LocalDate getDob() {
         return dob;
     }
 
-    public void setDob(String dob) {
+    public void setDob(@NotNull @Past LocalDate dob) {
         this.dob = dob;
     }
 
-    public String getAddress() {
+    public @NotBlank @Size(max = 255) String getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(@NotBlank @Size(max = 255) String address) {
         this.address = address;
     }
 
-    public String getRole() {
-        return role;
+    public Set<String> getRoles() {
+        return roles;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 
     public LocalDateTime getAccountCreationDate() {
@@ -157,4 +175,3 @@ public class User
         this.accountCreationDate = accountCreationDate;
     }
 }
-

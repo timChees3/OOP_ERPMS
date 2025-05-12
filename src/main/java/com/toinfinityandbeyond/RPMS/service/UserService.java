@@ -12,7 +12,6 @@ import java.util.Map;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.*;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +45,6 @@ public class UserService
         }
     }
 
-    @Transactional
     public Map<String,Object> login(String username, String password) {
         User u = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadRequestException("Invalid username or password"));
